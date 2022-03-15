@@ -8,12 +8,15 @@
 # rpc-methods is set to Unsafe which is for local development only.
 
 build3-node \
---base-path /tmp/node01 \
---chain ./customSpecRaw.json \
+--base-path /tmp/alice \
+#--chain ./customSpecRaw.json \
+--alice \
+--chain local \
 --port 30333 \
 --ws-port 9945 \
 --rpc-port 9933 \
 --telemetry-url "wss://telemetry.polkadot.io/submit/ 0" \
 --validator \
+--node-key 0000000000000000000000000000000000000000000000000000000000000001 \
 --rpc-methods Unsafe \
---name block_choy_1
+--name alice
