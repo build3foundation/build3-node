@@ -2,7 +2,7 @@
 name = "build3-node"
 version = "0.1.0"
 authors = ["Build3 Foundation"]
-description = "Substrate node configured for smart contracts via `pallet-contracts`."
+description = "Build3 foundation node built with substrate framework."
 edition = "2021"
 license = "Apache-2.0"
 homepage = "https://build3.foundation"

@@ -9,7 +9,7 @@ use sc_service::PartialComponents;
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Substrate Contracts Node".into()
+		"Build3 Node".into()
 	}
 
 	fn impl_version() -> String {
@@ -25,11 +25,11 @@ impl SubstrateCli for Cli {
 	}
 
 	fn support_url() -> String {
-		"https://github.com/paritytech/canvas-node/issues/new".into()
+		"https://github.com/build3foundation/build3-node/issues".into()
 	}
 
 	fn copyright_start_year() -> i32 {
-		2021
+		2022
 	}
 
 	fn load_spec(&self, id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
