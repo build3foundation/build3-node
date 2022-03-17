@@ -2,7 +2,12 @@
 
 The blockchain node for Build3 built on substrate.
 
-This repository is tracking Substrate's `master`.
+This repository has two forks of Parity repositories included as submodules.
+The repositories are `ink` and `substrate` and they are intended to give direct
+access to the `master` while being able to update the code if needed to correct
+bugs or improve features. If our team improves or corrects the original `ink`
+or `substrate` repository, please review the contribution guidelines and offer
+the work as a pull request to their work.
 
 ## Installation
 

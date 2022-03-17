@@ -1,13 +1,27 @@
+//! # Build3 Runtime Configurations
+//!
+//! ADD DOCUMENTATION...
+//!
+//!
+//!
+
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
+
+/// Constant values used within the runtime.
+pub mod constants;
+use constants::currency::*;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 use frame_support::weights::DispatchClass;
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{
+	limits::{BlockLength, BlockWeights},
+	EnsureRoot,
+};
 use pallet_contracts::weights::WeightInfo;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
@@ -17,21 +31,21 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
+	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, NumberFor},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature,
+	ApplyExtrinsicResult,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-// use pallet_identity::*;
+pub use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Signature};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU32, KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{ConstU32, KeyOwnerProofSystem, OnUnbalanced, Randomness, StorageInfo},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
@@ -45,29 +59,11 @@ use pallet_transaction_payment::CurrencyAdapter;
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
 
-/// An index to a block.
-pub type BlockNumber = u32;
-
-/// Alias to 512-bit hash when used in the context of a transaction signature on the chain.
-pub type Signature = MultiSignature;
-
-/// Some way of identifying an account on the chain. We intentionally make it equivalent
-/// to the public key of our transaction signing scheme.
-pub type AccountId = <<Signature as Verify>::Signer as IdentifyAccount>::AccountId;
-
-/// Balance of an account.
-pub type Balance = u128;
-
-/// Index of a transaction in the chain.
-pub type Index = u32;
-
-/// A hash of some data used by the chain.
-pub type Hash = sp_core::H256;
-
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
 /// to even the core data structures.
+
 pub mod opaque {
 	use super::*;
 
@@ -90,10 +86,20 @@ pub mod opaque {
 // To learn more about runtime versioning and what each of the following value means:
 //   https://docs.substrate.io/v3/runtime/upgrades#runtime-versioning
 #[sp_version::runtime_version]
+/// The runtime version
 pub const VERSION: RuntimeVersion = RuntimeVersion {
+	/// The identified for the different Substrate runtimes.
 	spec_name: create_runtime_str!("build3-node"),
+	// The name of the implementation of the spec. This is of little
+	// consequence for the node and serves only to differentiate code of
+	// different implementation teams.
 	impl_name: create_runtime_str!("build3-node"),
 	authoring_version: 1,
+	// Per convention: if the runtime behavior changes, increment spec_version
+	// and set impl_version to 0. If only runtime
+	// implementation changes and behavior does not, then leave spec_version as
+	// is and increment impl_version.
+
 	// The version of the runtime specification. A full node will not attempt to use its native
 	//   runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
 	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
@@ -249,6 +255,58 @@ impl pallet_aura::Config for Runtime {
 	type MaxAuthorities = MaxAuthorities;
 }
 
+parameter_types! {
+	pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
+	pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
+	pub const SubAccountDeposit: Balance = 2 * DOLLARS;   // 53 bytes on-chain
+	pub const MaxSubAccounts: u32 = 100;
+	pub const MaxAdditionalFields: u32 = 100;
+	pub const MaxRegistrars: u32 = 20;
+}
+
+/// The identity pallet used to issue credentials to professionals
+impl pallet_identity::Config for Runtime {
+	type Event = Event;
+	type Currency = Balances;
+
+	/// The amount held on deposit for a registered identity.
+	type BasicDeposit = BasicDeposit;
+
+	/// The amount held on deposit per additional field for a registered identity.
+	type FieldDeposit = FieldDeposit;
+
+	/// The amount held on deposit for a registered subaccount. This should account for the fact
+	/// that one storage item's value will increase by the size of an account ID, and there will be
+	/// another trie item whose value is the size of an account ID plus 32 bytes.
+	type SubAccountDeposit = SubAccountDeposit;
+
+	/// The maximum number of sub-accounts allowed per identified account.
+	type MaxSubAccounts = MaxSubAccounts;
+
+	/// Maximum number of additional fields that may be stored in an ID. Needed to bound the I/O
+	/// required to access an identity, but can be pretty high.
+	type MaxAdditionalFields = MaxAdditionalFields;
+
+	/// Maxmimum number of registrars allowed in the system. Needed to bound the complexity
+	/// of, e.g., updating judgements.
+	type MaxRegistrars = MaxRegistrars;
+
+	/// What to do with slashed funds.
+	type Slashed = ();
+
+	/// The origin which may forcibly set or remove a name. Root can always do this.
+	/// Right now this is only the root. This will eventually be assigned to
+	/// the council.
+	type ForceOrigin = EnsureRoot<AccountId>;
+
+	/// The origin which may add or remove registrars. Right now only set to
+	/// root but can eventually be at the vote of a council.
+	type RegistrarOrigin = EnsureRoot<AccountId>;
+
+	/// Weight information for extrinsics in this pallet. Not yet configured.
+	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
+}
+
 impl pallet_grandpa::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -385,6 +443,7 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
 		Contracts: pallet_contracts,
+		Identity: pallet_identity,
 	}
 );
 
@@ -563,6 +622,7 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, frame_system, SystemBench::<Runtime>);
 			list_benchmark!(list, extra, pallet_balances, Balances);
 			list_benchmark!(list, extra, pallet_timestamp, Timestamp);
+			list_benchmark!(params, batches, pallet_identity, Identity);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -600,6 +660,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, frame_system, SystemBench::<Runtime>);
 			add_benchmark!(params, batches, pallet_balances, Balances);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
+			add_benchmark!(params, batches, pallet_identity, Identity);
 
 			Ok(batches)
 		}
