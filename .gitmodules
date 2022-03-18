@@ -1,6 +1,0 @@
-[submodule "substrate"]
-	path = substrate
-	url = https://github.com/build3foundation/substrate.git
-[submodule "ink"]
-	path = ink
-	url = https://github.com/build3foundation/ink.git
