@@ -56,7 +56,7 @@ pub mod block_time {
 
 // To learn more about runtime versioning and what each of the following value means:
 //   https://docs.substrate.io/v3/runtime/upgrades#runtime-versioning
-#[runtime_version]
+#[sp_version::runtime_version]
 /// The runtime version
 pub const VERSION: RuntimeVersion = RuntimeVersion {
 	/// The identified for the different Substrate runtimes.
