@@ -42,6 +42,7 @@ sp-version = { git = "https://github.com/paritytech/substrate", package = "sp-ve
 # Added dependencies for Build3 dev
 pallet-identity = { git = "https://github.com/paritytech/substrate", package = "pallet-identity", default-features = false }
 node-primitives = { git = "https://github.com/paritytech/substrate", default-features = false, package = "node-primitives" }
+pallet-collective = { git = "https://github.com/paritytech/substrate", default-features = false, package = "pallet-collective" }
 
 # Used for the node's RPCs
 frame-system-rpc-runtime-api = { git = "https://github.com/paritytech/substrate", package = "frame-system-rpc-runtime-api", default-features = false }
@@ -97,6 +98,7 @@ std = [
 	"pallet-contracts-rpc-runtime-api/std",
 	"pallet-identity/std",
 	"node-primitives/std",
+	"pallet-collective/std",
 
 ]
 runtime-benchmarks = [
@@ -109,6 +111,7 @@ runtime-benchmarks = [
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 	"pallet-identity/runtime-benchmarks",
+	"pallet-collective/runtime-benchmarks",
 ]
 # Make contract callable functions marked as __unstable__ available. Do not enable
 # on live chains as those are subject to change.

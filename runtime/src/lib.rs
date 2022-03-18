@@ -44,7 +44,9 @@ use sp_std::prelude::*;
 use sp_version::NativeVersion;
 
 /// -------------------------^ PRIVATE IMPORTS ^ __________________________________
-/// -------------------------\/ PUBLIC IMPORTS \/ __________________________________
+///
+///
+/// -------------------------\/ PUBLIC IMPORTS \/ _________________________________
 pub use sp_version::RuntimeVersion;
 
 /// Constant values used within the runtime.
@@ -70,6 +72,10 @@ pub use frame_support::{
 pub use pallet_balances::Call as BalancesCall;
 
 pub use pallet_timestamp::Call as TimestampCall;
+
+pub use pallet_collective::{
+	Call as CollectiveCall, MoreThanMajorityThenPrimeDefaultVote, RawOrigin as CollectiveOrigin,
+};
 
 use pallet_transaction_payment::CurrencyAdapter;
 
@@ -366,6 +372,24 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+parameter_types! {
+	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+	pub const CouncilMaxProposals: u32 = 100;
+	pub const CouncilMaxMembers: u32 = 100;
+}
+
+type CouncilCollective = pallet_collective::Instance1;
+impl pallet_collective::Config<CouncilCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = CouncilMotionDuration;
+	type MaxProposals = CouncilMaxProposals;
+	type MaxMembers = CouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
 // Transaction storage
 parameter_types! {
 	pub const TransactionByteFee: Balance = 1;
@@ -492,6 +516,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Contracts: pallet_contracts,
 		Identity: pallet_identity,
+		Council: pallet_collective::<Instance1>,
 	}
 );
 
