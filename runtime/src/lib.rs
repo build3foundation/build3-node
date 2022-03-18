@@ -9,18 +9,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-/// Constant values used within the runtime.
-pub mod constants;
-pub use constants::{block_time::*, currency::*, VERSION};
-
-/// The version information used to identify this runtime when compiled natively.
-#[cfg(feature = "std")]
-pub fn native_version() -> NativeVersion {
-	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
-}
-
-pub use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Signature};
-
+/// FRAME crates
 use frame_support::weights::DispatchClass;
 
 use frame_system::{
@@ -28,6 +17,7 @@ use frame_system::{
 	EnsureRoot,
 };
 
+/// Pallets
 use pallet_contracts::weights::WeightInfo;
 
 use pallet_grandpa::{
@@ -52,9 +42,20 @@ use sp_std::prelude::*;
 
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
+
+/// -------------------------^ PRIVATE IMPORTS ^ __________________________________
+/// -------------------------\/ PUBLIC IMPORTS \/ __________________________________
 pub use sp_version::RuntimeVersion;
 
-// A few exports that help ease life for downstream crates.
+/// Constant values used within the runtime.
+pub mod constants;
+
+pub use constants::{block_time::*, currency::*};
+
+/// Node primitives
+pub use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Signature};
+
+/// A few public FRAME exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
 	traits::{ConstU32, KeyOwnerProofSystem, OnUnbalanced, Randomness, StorageInfo},
@@ -65,16 +66,19 @@ pub use frame_support::{
 	StorageValue,
 };
 
+/// A few imports from a few pallets
 pub use pallet_balances::Call as BalancesCall;
 
 pub use pallet_timestamp::Call as TimestampCall;
 
 use pallet_transaction_payment::CurrencyAdapter;
 
+/// Complex storage builder stuff
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 
-/// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
+/// # Opaque Types
+/// These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
 /// of data like extrinsics, allowing for them to continue syncing the network through upgrades
 /// to even the core data structures.
@@ -98,6 +102,42 @@ pub mod opaque {
 	}
 }
 
+/// The version information used to identify this runtime when compiled natively.
+#[cfg(feature = "std")]
+pub fn native_version() -> NativeVersion {
+	NativeVersion { runtime_version: VERSION, can_author_with: Default::default() }
+}
+
+// To learn more about runtime versioning and what each of the following value means:
+//   https://docs.substrate.io/v3/runtime/upgrades#runtime-versioning
+#[sp_version::runtime_version]
+/// The runtime version
+pub const VERSION: RuntimeVersion = RuntimeVersion {
+	/// The identified for the different Substrate runtimes.
+	spec_name: create_runtime_str!("build3-node"),
+	// The name of the implementation of the spec. This is of little
+	// consequence for the node and serves only to differentiate code of
+	// different implementation teams.
+	impl_name: create_runtime_str!("build3-node"),
+	authoring_version: 1,
+	// Per convention: if the runtime behavior changes, increment spec_version
+	// and set impl_version to 0. If only runtime
+	// implementation changes and behavior does not, then leave spec_version as
+	// is and increment impl_version.
+
+	// The version of the runtime specification. A full node will not attempt to use its native
+	//   runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
+	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
+	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
+	//   the compatible custom types.
+	spec_version: 100,
+	impl_version: 1,
+	apis: RUNTIME_API_VERSIONS,
+	transaction_version: 1,
+	state_version: 1,
+};
+
+// Prepare the frame_system storage
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
@@ -130,8 +170,7 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 42;
 }
 
-// Configure FRAME pallets to include in runtime.
-
+/// Configure FRAME pallets to include in runtime.
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
 	type BaseCallFilter = frame_support::traits::Everything;
@@ -184,18 +223,22 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = ConstU32<16>;
 }
 
+/// A pallet which provides a randomness function
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
+// Aura consensus storage
 parameter_types! {
 	pub const MaxAuthorities: u32 = 32;
 }
 
+/// Aura consensus configuration
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
 	type MaxAuthorities = MaxAuthorities;
 }
 
+// Identity pallet storage
 parameter_types! {
 	pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
 	pub const FieldDeposit: Balance = 250 * CENTS;        // 66 bytes on-chain
@@ -205,7 +248,10 @@ parameter_types! {
 	pub const MaxRegistrars: u32 = 20;
 }
 
-/// The identity pallet used to issue credentials to professionals
+/// Identity pallet configuration.
+/// The identity pallet is used to model engineering licensure. Eventually this
+///will be made into a different instance (or pallet) with more customized
+///features for engineering.
 impl pallet_identity::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
@@ -248,6 +294,7 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
+/// GRANDPA finality configuration.
 impl pallet_grandpa::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
@@ -268,10 +315,12 @@ impl pallet_grandpa::Config for Runtime {
 	type MaxAuthorities = MaxAuthorities;
 }
 
+// Timestamp storage setting minimum period between blocks.
 parameter_types! {
 	pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
 }
 
+/// Timestamp configuration.
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
@@ -280,43 +329,100 @@ impl pallet_timestamp::Config for Runtime {
 	type WeightInfo = ();
 }
 
+// Balances storage
 parameter_types! {
 	pub const ExistentialDeposit: u128 = EXISTENTIAL_DEPOSIT;
 	pub const MaxLocks: u32 = 50;
 }
 
+/// Balances configuration
 impl pallet_balances::Config for Runtime {
+	/// The maximum number of locks that should exist on an account.
+	/// Not strictly enforced, but used for weight estimation.
 	type MaxLocks = MaxLocks;
+
+	/// The maximum number of named reserves that can exist on an account.
 	type MaxReserves = ();
+
+	/// The id type for named reserves.
 	type ReserveIdentifier = [u8; 8];
+
 	/// The type for recording an account's balance.
 	type Balance = Balance;
+
 	/// The ubiquitous event type.
 	type Event = Event;
+
+	/// Handler for the unbalanced reduction when removing a dust account.
 	type DustRemoval = ();
+
+	/// The minimum amount required to keep an account open.
 	type ExistentialDeposit = ExistentialDeposit;
+
+	/// The means of storing the balances of an account.
 	type AccountStore = System;
+
+	/// Weight information for extrinsics in this pallet.
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+// Transaction storage
 parameter_types! {
 	pub const TransactionByteFee: Balance = 1;
 	pub OperationalFeeMultiplier: u8 = 5;
 }
 
+/// Transaction configuration
 impl pallet_transaction_payment::Config for Runtime {
+	/// Handler for withdrawing, refunding and depositing the transaction fee.
+	/// Transaction fees are withdrawn before the transaction is executed.
+	/// After the transaction was executed the transaction weight can be
+	/// adjusted, depending on the used resources by the transaction. If the
+	/// transaction weight is lower than expected, parts of the transaction fee
+	/// might be refunded. In the end the fees can be deposited.
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+
+	/// The fee to be paid for making a transaction; the per-byte portion.
 	type TransactionByteFee = TransactionByteFee;
+
+	/// A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
+	/// `priority`
+	///
+	/// This value is multipled by the `final_fee` to obtain a "virtual tip" that is later
+	/// added to a tip component in regular `priority` calculations.
+	/// It means that a `Normal` transaction can front-run a similarly-sized `Operational`
+	/// extrinsic (with no tip), by including a tip value greater than the virtual tip.
+	///
+	/// ```rust,ignore
+	/// // For `Normal`
+	/// let priority = priority_calc(tip);
+	///
+	/// // For `Operational`
+	/// let virtual_tip = (inclusion_fee + tip) * OperationalFeeMultiplier;
+	/// let priority = priority_calc(tip + virtual_tip);
+	/// ```
+	///
+	/// Note that since we use `final_fee` the multiplier applies also to the regular `tip`
+	/// sent with the transaction. So, not only does the transaction get a priority bump based
+	/// on the `inclusion_fee`, but we also amplify the impact of tips applied to `Operational`
+	/// transactions.
 	type OperationalFeeMultiplier = OperationalFeeMultiplier;
+
+	/// Convert a weight value into a deductible fee based on the currency type.
 	type WeightToFee = IdentityFee<Balance>;
+
+	/// Update the multiplier of the next block, based on the previous block's weight.
 	type FeeMultiplierUpdate = ();
 }
 
+/// Adding root account to the runtime. This is only required if we decide to
+/// keep root access with build3 which is not likely required.
 impl pallet_sudo::Config for Runtime {
 	type Event = Event;
 	type Call = Call;
 }
 
+// Contract storages
 parameter_types! {
 	pub const DepositPerItem: Balance = deposit(1, 0);
 	pub const DepositPerByte: Balance = deposit(0, 1);
@@ -343,6 +449,7 @@ parameter_types! {
 	};
 }
 
+/// Contracts pallet configuration
 impl pallet_contracts::Config for Runtime {
 	type Time = Timestamp;
 	type Randomness = RandomnessCollectiveFlip;
@@ -390,12 +497,15 @@ construct_runtime!(
 
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
+
 /// Block type as expected by this runtime.
 pub type Block = generic::Block<Header, UncheckedExtrinsic>;
+
 /// The SignedExtension to the basic transaction logic.
-pub type SignedExtra = (
+pub type Extra = (
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
@@ -404,8 +514,11 @@ pub type SignedExtra = (
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
+
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+/// TODO: convert to checked extrinsics prior to production.
+pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, Extra>;
+
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
@@ -473,6 +586,8 @@ impl_runtime_apis! {
 		}
 	}
 
+	/// Implement Aura consensus by setting slot durationg and storing the
+	/// authorities.
 	impl sp_consensus_aura::AuraApi<Block, AuraId> for Runtime {
 		fn slot_duration() -> sp_consensus_aura::SlotDuration {
 			sp_consensus_aura::SlotDuration::from_millis(Aura::slot_duration())
@@ -482,6 +597,7 @@ impl_runtime_apis! {
 			Aura::authorities().into_inner()
 		}
 	}
+
 
 	impl sp_session::SessionKeys<Block> for Runtime {
 		fn generate_session_keys(seed: Option<Vec<u8>>) -> Vec<u8> {
@@ -495,6 +611,7 @@ impl_runtime_apis! {
 		}
 	}
 
+	/// GRANPA finality primitives
 	impl fg_primitives::GrandpaApi<Block> for Runtime {
 		fn grandpa_authorities() -> GrandpaAuthorityList {
 			Grandpa::grandpa_authorities()
@@ -525,12 +642,15 @@ impl_runtime_apis! {
 		}
 	}
 
+	/// Runtime API definitions giving nodes System access methods
+	/// Returning the account nonce index (aka the account transaction counter)
 	impl frame_system_rpc_runtime_api::AccountNonceApi<Block, AccountId, Index> for Runtime {
 		fn account_nonce(account: AccountId) -> Index {
 			System::account_nonce(account)
 		}
 	}
 
+	/// I'm honestly not sure what is happening here....KMS
 	impl pallet_transaction_payment_rpc_runtime_api::TransactionPaymentApi<Block, Balance> for Runtime {
 		fn query_info(
 			uxt: <Block as BlockT>::Extrinsic,
@@ -546,6 +666,7 @@ impl_runtime_apis! {
 		}
 	}
 
+	// Configure benchmark
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
 		fn benchmark_metadata(extra: bool) -> (
@@ -607,6 +728,8 @@ impl_runtime_apis! {
 		}
 	}
 
+	// Giving System access to the contracts so they can be called,
+	// instantiated, updloaded, and have their storage retrieved.
 	impl pallet_contracts_rpc_runtime_api::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash>
 		for Runtime
 	{

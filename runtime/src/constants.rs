@@ -2,7 +2,6 @@
 use frame_support::weights::{constants::WEIGHT_PER_SECOND, Weight};
 pub use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Signature};
 pub use sp_runtime::{create_runtime_str, Perbill};
-use sp_version::{runtime_version, RuntimeVersion};
 
 /// Money matters.
 pub mod currency {
@@ -53,32 +52,3 @@ pub mod block_time {
 	// started with `-lruntime::contracts=debug`.
 	pub const CONTRACTS_DEBUG_OUTPUT: bool = true;
 }
-
-// To learn more about runtime versioning and what each of the following value means:
-//   https://docs.substrate.io/v3/runtime/upgrades#runtime-versioning
-#[sp_version::runtime_version]
-/// The runtime version
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	/// The identified for the different Substrate runtimes.
-	spec_name: create_runtime_str!("build3-node"),
-	// The name of the implementation of the spec. This is of little
-	// consequence for the node and serves only to differentiate code of
-	// different implementation teams.
-	impl_name: create_runtime_str!("build3-node"),
-	authoring_version: 1,
-	// Per convention: if the runtime behavior changes, increment spec_version
-	// and set impl_version to 0. If only runtime
-	// implementation changes and behavior does not, then leave spec_version as
-	// is and increment impl_version.
-
-	// The version of the runtime specification. A full node will not attempt to use its native
-	//   runtime in substitute for the on-chain Wasm runtime unless all of `spec_name`,
-	//   `spec_version`, and `authoring_version` are the same between Wasm and native.
-	// This value is set to 100 to notify Polkadot-JS App (https://polkadot.js.org/apps) to use
-	//   the compatible custom types.
-	spec_version: 100,
-	impl_version: 1,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
-};
