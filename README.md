@@ -9,6 +9,16 @@ bugs or improve features. If our team improves or corrects the original `ink`
 or `substrate` repository, please review the contribution guidelines and offer
 the work as a pull request to their work.
 
+Note: [check this out for M1 silicon](https://vikiival.medium.com/run-substrate-on-apple-m1-a2699743fae8)
+
+## Rust Nightly
+
+```shell
+rustup update
+rustup update nightly
+rustup target add wasm32-unknown-unknown --toolchain nightly
+```
+
 ## Installation
 
 This installation assumes you have `Rust` and `Cargo` installed on your local environment.

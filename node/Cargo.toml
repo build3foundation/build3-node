@@ -36,8 +36,9 @@ sc-consensus = { git = "https://github.com/paritytech/substrate", package = "sc-
 sc-finality-grandpa = { git = "https://github.com/paritytech/substrate", package = "sc-finality-grandpa" }
 sp-finality-grandpa = { git = "https://github.com/paritytech/substrate", package = "sp-finality-grandpa" }
 sc-client-api = { git = "https://github.com/paritytech/substrate", package = "sc-client-api" }
-sp-runtime = { git = "https://github.com/paritytech/substrate", package = "sp-runtime" }
+
 sp-timestamp = { git = "https://github.com/paritytech/substrate", package = "sp-timestamp" }
+sp-runtime = { git = "https://github.com/paritytech/substrate", package = "sp-runtime" }
 
 # These dependencies are used for the node's RPCs
 jsonrpc-core = "18.0.0"
