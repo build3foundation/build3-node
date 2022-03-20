@@ -1,6 +1,6 @@
 use build3_node_runtime::{
-	AccountId, AuraConfig, BalancesConfig, CouncilConfig, GenesisConfig, GrandpaConfig, Signature,
-	SudoConfig, SystemConfig, WASM_BINARY,
+	AccountId, AuraConfig, BalancesConfig, BoardVirginiaConfig, CouncilConfig, GenesisConfig,
+	GrandpaConfig, Signature, SudoConfig, SystemConfig, WASM_BINARY,
 };
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -76,6 +76,15 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Eve"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 				],
+				// VA Board Accounts
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				],
 				true,
 			)
 		},
@@ -134,6 +143,15 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Eve"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 				],
+				// VA Board Accounts
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				],
 				true,
 			)
 		},
@@ -159,6 +177,7 @@ fn testnet_genesis(
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	council_accounts: Vec<AccountId>,
+	board_va_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
 	GenesisConfig {
@@ -179,6 +198,10 @@ fn testnet_genesis(
 		council: CouncilConfig {
 			phantom: Default::default(),
 			members: council_accounts.iter().cloned().collect(),
+		},
+		board_virginia: BoardVirginiaConfig {
+			phantom: Default::default(),
+			members: board_va_accounts.iter().cloned().collect(),
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.

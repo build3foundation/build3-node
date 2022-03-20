@@ -372,12 +372,14 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+// Council constant configurations
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
 }
 
+// Council configuration
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type Origin = Origin;
@@ -386,6 +388,26 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MotionDuration = CouncilMotionDuration;
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+// Board of VA constant configurations
+parameter_types! {
+	pub const BoardVirginiaMotionDuration: BlockNumber = 5 * DAYS;
+	pub const BoardVirginiaMaxProposals: u32 = 100;
+	pub const BoardVirginiaMaxMembers: u32 = 100;
+}
+
+// Board of VA configuration
+type BoardVirginiaCollective = pallet_collective::Instance2;
+impl pallet_collective::Config<BoardVirginiaCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = BoardVirginiaMotionDuration;
+	type MaxProposals = BoardVirginiaMaxProposals;
+	type MaxMembers = BoardVirginiaMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
@@ -517,6 +539,7 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		Identity: pallet_identity,
 		Council: pallet_collective::<Instance1>,
+		BoardVirginia: pallet_collective::<Instance2>,
 	}
 );
 
@@ -710,6 +733,8 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_balances, Balances);
 			list_benchmark!(list, extra, pallet_timestamp, Timestamp);
 			list_benchmark!(params, batches, pallet_identity, Identity);
+			list_benchmark!(params, batches, pallet_collective, Council);
+			list_benchmark!(params, batches, pallet_collective, BoardVirginia);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -748,6 +773,8 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_balances, Balances);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 			add_benchmark!(params, batches, pallet_identity, Identity);
+			add_benchmark!(params, batches, pallet_collective, Council);
+			add_benchmark!(params, bathces, pallet_collective, BoardVirginia);
 
 			Ok(batches)
 		}
