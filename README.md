@@ -25,7 +25,7 @@ This installation assumes you have `Rust` and `Cargo` installed on your local en
 Mac:
 
 ```bash
-sudo cargo install build3-node --path ./node
+cargo install build3-node --path ./node
 ```
 
 ## Usage
