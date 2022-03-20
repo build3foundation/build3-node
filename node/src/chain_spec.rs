@@ -67,6 +67,15 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
+				// Council Accounts
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				],
 				true,
 			)
 		},
@@ -116,6 +125,15 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 				],
+				// Council Accounts
+				vec![
+					get_account_id_from_seed::<sr25519::Public>("Alice"),
+					get_account_id_from_seed::<sr25519::Public>("Bob"),
+					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					get_account_id_from_seed::<sr25519::Public>("Dave"),
+					get_account_id_from_seed::<sr25519::Public>("Eve"),
+					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
+				],
 				true,
 			)
 		},
@@ -140,6 +158,7 @@ fn testnet_genesis(
 	initial_authorities: Vec<(AuraId, GrandpaId)>,
 	root_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
+	council_accounts: Vec<AccountId>,
 	_enable_println: bool,
 ) -> GenesisConfig {
 	GenesisConfig {
@@ -157,7 +176,10 @@ fn testnet_genesis(
 		grandpa: GrandpaConfig {
 			authorities: initial_authorities.iter().map(|x| (x.1.clone(), 1)).collect(),
 		},
-		council: CouncilConfig::default(),
+		council: CouncilConfig {
+			phantom: Default::default(),
+			members: council_accounts.iter().cloned().collect(),
+		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
