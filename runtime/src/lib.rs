@@ -12,7 +12,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 /// FRAME crates
 use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{ConstU32, EnsureOneOf, KeyOwnerProofSystem},
+	traits::{ConstU16, ConstU32, EnsureOneOf, KeyOwnerProofSystem},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight},
 		DispatchClass, IdentityFee, Weight,
@@ -227,6 +227,23 @@ impl frame_system::Config for Runtime {
 
 /// A pallet which provides a randomness function
 impl pallet_randomness_collective_flip::Config for Runtime {}
+
+parameter_types! {
+	// One storage item; key size is 32; value is size 4+4+16+32 bytes = 56 bytes.
+	pub const DepositBase: Balance = deposit(1, 88);
+	// Additional storage item size of 32 bytes.
+	pub const DepositFactor: Balance = deposit(0, 32);
+}
+
+impl pallet_multisig::Config for Runtime {
+	type Event = Event;
+	type Call = Call;
+	type Currency = Balances;
+	type DepositBase = DepositBase;
+	type DepositFactor = DepositFactor;
+	type MaxSignatories = ConstU16<100>;
+	type WeightInfo = pallet_multisig::weights::SubstrateWeight<Runtime>;
+}
 
 // Aura consensus storage
 parameter_types! {
@@ -565,6 +582,7 @@ construct_runtime!(
 		CouncilMembers: pallet_membership::<Instance1>,
 		BoardVirginia: pallet_collective::<Instance2>,
 		BoardVirginiaMembers: pallet_membership::<Instance2>,
+		Multisig: pallet_multisig,
 
 	}
 );
@@ -763,6 +781,7 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_collective,  BoardVirginia);
 			list_benchmark!(list, extra, pallet_membership, BoardVirginiaMembers);
 			list_benchmark!(list, extra, pallet_membership, CouncilMembers);
+			list_benchmark!(list, extra, pallet_multisig, Multisig);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -805,6 +824,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, bathces, pallet_collective, BoardVirginia);
 			add_benchmark!(params, batches, pallet_membership, BoardVirginiaMembers);
 			add_benchmark!(params, batches, pallet_membership, CouncilMembers);
+			add_benchmark!(params, batches, pallet_multisig, Multisig);
 
 			Ok(batches)
 		}
