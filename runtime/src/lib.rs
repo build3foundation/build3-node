@@ -274,30 +274,12 @@ parameter_types! {
 impl pallet_identity::Config for Runtime {
 	type Event = Event;
 	type Currency = Balances;
-
-	/// The amount held on deposit for a registered identity.
 	type BasicDeposit = BasicDeposit;
-
-	/// The amount held on deposit per additional field for a registered identity.
 	type FieldDeposit = FieldDeposit;
-
-	/// The amount held on deposit for a registered subaccount. This should account for the fact
-	/// that one storage item's value will increase by the size of an account ID, and there will be
-	/// another trie item whose value is the size of an account ID plus 32 bytes.
 	type SubAccountDeposit = SubAccountDeposit;
-
-	/// The maximum number of sub-accounts allowed per identified account.
 	type MaxSubAccounts = MaxSubAccounts;
-
-	/// Maximum number of additional fields that may be stored in an ID. Needed to bound the I/O
-	/// required to access an identity, but can be pretty high.
 	type MaxAdditionalFields = MaxAdditionalFields;
-
-	/// Maxmimum number of registrars allowed in the system. Needed to bound the complexity
-	/// of, e.g., updating judgements.
 	type MaxRegistrars = MaxRegistrars;
-
-	/// What to do with slashed funds.
 	type Slashed = ();
 
 	/// The origin which may forcibly set or remove a name. Root can always do this.
@@ -308,8 +290,6 @@ impl pallet_identity::Config for Runtime {
 	/// The origin which may add or remove registrars. Right now only set to
 	/// root but can eventually be at the vote of a council.
 	type RegistrarOrigin = EnsureRootOrHalfCouncil;
-
-	/// Weight information for extrinsics in this pallet. Not yet configured.
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
@@ -383,7 +363,7 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MotionDuration = CouncilMotionDuration;
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
@@ -425,7 +405,7 @@ impl pallet_collective::Config<BoardVirginiaCollective> for Runtime {
 	type MotionDuration = BoardVirginiaMotionDuration;
 	type MaxProposals = BoardVirginiaMaxProposals;
 	type MaxMembers = BoardVirginiaMaxMembers;
-	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type DefaultVote = pallet_collective::MoreThanMajorityThenPrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
@@ -579,9 +559,9 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		Identity: pallet_identity,
 		Council: pallet_collective::<Instance1>,
-		CouncilMembers: pallet_membership::<Instance1>,
+		CouncilMemberManager: pallet_membership::<Instance1>,
 		BoardVirginia: pallet_collective::<Instance2>,
-		BoardVirginiaMembers: pallet_membership::<Instance2>,
+		BoardVirginiaMemberManager: pallet_membership::<Instance2>,
 		Multisig: pallet_multisig,
 
 	}
@@ -779,8 +759,8 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_identity,  Identity);
 			list_benchmark!(list, extra, pallet_collective,  Council);
 			list_benchmark!(list, extra, pallet_collective,  BoardVirginia);
-			list_benchmark!(list, extra, pallet_membership, BoardVirginiaMembers);
-			list_benchmark!(list, extra, pallet_membership, CouncilMembers);
+			list_benchmark!(list, extra, pallet_membership, BoardVirginiaMemberManager);
+			list_benchmark!(list, extra, pallet_membership, CouncilMemberManager);
 			list_benchmark!(list, extra, pallet_multisig, Multisig);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
@@ -822,8 +802,8 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_identity, Identity);
 			add_benchmark!(params, batches, pallet_collective, Council);
 			add_benchmark!(params, bathces, pallet_collective, BoardVirginia);
-			add_benchmark!(params, batches, pallet_membership, BoardVirginiaMembers);
-			add_benchmark!(params, batches, pallet_membership, CouncilMembers);
+			add_benchmark!(params, batches, pallet_membership, BoardVirginiaMemberManager);
+			add_benchmark!(params, batches, pallet_membership, CouncilMemberManager);
 			add_benchmark!(params, batches, pallet_multisig, Multisig);
 
 			Ok(batches)
