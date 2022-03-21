@@ -55,5 +55,10 @@ frontend to interact with your chain.
 [Click here](https://polkadot.js.org/apps/#/explorer?rpc=ws://localhost:9944)
 to connect the frontend to your local node.
 
-[] Add council
-[] Add identity
+-[] Add council
+-[] Add identity
+
+## NPOS Network Setup
+
+[This](https://medium.com/oak-blockchain/tutorial-deploy-a-substrate-npos-network-in-3-minutes-fab9de5c4c2b) was a useful website to understand how to get the NPOS staging network
+setup with custom keys.

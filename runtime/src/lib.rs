@@ -10,7 +10,14 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 /// FRAME crates
-use frame_support::weights::DispatchClass;
+use frame_support::{
+	construct_runtime, parameter_types,
+	traits::{ConstU32, EnsureOneOf, KeyOwnerProofSystem},
+	weights::{
+		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight},
+		DispatchClass, IdentityFee, Weight,
+	},
+};
 
 use frame_system::{
 	limits::{BlockLength, BlockWeights},
@@ -56,17 +63,6 @@ pub use constants::{block_time::*, currency::*};
 
 /// Node primitives
 pub use node_primitives::{AccountId, AccountIndex, Balance, BlockNumber, Hash, Index, Signature};
-
-/// A few public FRAME exports that help ease life for downstream crates.
-pub use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{ConstU32, KeyOwnerProofSystem, OnUnbalanced, Randomness, StorageInfo},
-	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight},
-		IdentityFee, Weight,
-	},
-	StorageValue,
-};
 
 /// A few imports from a few pallets
 pub use pallet_balances::Call as BalancesCall;
@@ -244,6 +240,13 @@ impl pallet_aura::Config for Runtime {
 	type MaxAuthorities = MaxAuthorities;
 }
 
+/// Configure an Origin requirement which must be eitehr half council vote or a
+/// sudo key
+type EnsureRootOrHalfCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
+>;
+
 // Identity pallet storage
 parameter_types! {
 	pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
@@ -290,11 +293,11 @@ impl pallet_identity::Config for Runtime {
 	/// The origin which may forcibly set or remove a name. Root can always do this.
 	/// Right now this is only the root. This will eventually be assigned to
 	/// the council.
-	type ForceOrigin = EnsureRoot<AccountId>;
+	type ForceOrigin = EnsureRootOrHalfCouncil;
 
 	/// The origin which may add or remove registrars. Right now only set to
 	/// root but can eventually be at the vote of a council.
-	type RegistrarOrigin = EnsureRoot<AccountId>;
+	type RegistrarOrigin = EnsureRootOrHalfCouncil;
 
 	/// Weight information for extrinsics in this pallet. Not yet configured.
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
@@ -372,12 +375,14 @@ impl pallet_balances::Config for Runtime {
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
+// Council constant configurations
 parameter_types! {
 	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
 }
 
+// Council configuration
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type Origin = Origin;
@@ -386,6 +391,26 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type MotionDuration = CouncilMotionDuration;
 	type MaxProposals = CouncilMaxProposals;
 	type MaxMembers = CouncilMaxMembers;
+	type DefaultVote = pallet_collective::PrimeDefaultVote;
+	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+// Board of VA constant configurations
+parameter_types! {
+	pub const BoardVirginiaMotionDuration: BlockNumber = 5 * DAYS;
+	pub const BoardVirginiaMaxProposals: u32 = 100;
+	pub const BoardVirginiaMaxMembers: u32 = 100;
+}
+
+// Board of VA configuration
+type BoardVirginiaCollective = pallet_collective::Instance2;
+impl pallet_collective::Config<BoardVirginiaCollective> for Runtime {
+	type Origin = Origin;
+	type Proposal = Call;
+	type Event = Event;
+	type MotionDuration = BoardVirginiaMotionDuration;
+	type MaxProposals = BoardVirginiaMaxProposals;
+	type MaxMembers = BoardVirginiaMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
@@ -517,6 +542,7 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		Identity: pallet_identity,
 		Council: pallet_collective::<Instance1>,
+		BoardVirginia: pallet_collective::<Instance2>,
 	}
 );
 
@@ -709,7 +735,9 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, frame_system, SystemBench::<Runtime>);
 			list_benchmark!(list, extra, pallet_balances, Balances);
 			list_benchmark!(list, extra, pallet_timestamp, Timestamp);
-			list_benchmark!(params, batches, pallet_identity, Identity);
+			list_benchmark!(list, extra, pallet_identity,  Identity);
+			list_benchmark!(list, extra, pallet_collective,  Council);
+			list_benchmark!(list, extra, pallet_collective,  BoardVirginia);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -748,6 +776,8 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_balances, Balances);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 			add_benchmark!(params, batches, pallet_identity, Identity);
+			add_benchmark!(params, batches, pallet_collective, Council);
+			add_benchmark!(params, bathces, pallet_collective, BoardVirginia);
 
 			Ok(batches)
 		}

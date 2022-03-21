@@ -9,3 +9,4 @@ rls*.log
 runtime/Cargo.lock
 .env
 customSpec.json
+/scripts/session_keys

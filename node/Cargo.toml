@@ -18,7 +18,9 @@ name = "build3-node"
 path = "src/main.rs"
 
 [dependencies]
+# third-party dependencies
 clap = { version = "3.0", features = ["derive"] }
+hex-literal = "0.3.4"
 
 sc-cli = { git = "https://github.com/paritytech/substrate", package = "sc-cli", features = ["wasmtime"] }
 sp-core = { git = "https://github.com/paritytech/substrate", package = "sp-core" }
@@ -39,6 +41,9 @@ sc-client-api = { git = "https://github.com/paritytech/substrate", package = "sc
 
 sp-timestamp = { git = "https://github.com/paritytech/substrate", package = "sp-timestamp" }
 sp-runtime = { git = "https://github.com/paritytech/substrate", package = "sp-runtime" }
+
+# Added from Build3 customizations
+sc-network = { git = "https://github.com/paritytech/substrate", package = "sc-network" }
 
 # These dependencies are used for the node's RPCs
 jsonrpc-core = "18.0.0"
