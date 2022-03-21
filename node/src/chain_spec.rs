@@ -64,12 +64,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Dave"),
 					get_account_id_from_seed::<sr25519::Public>("Eve"),
 					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Dave//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Eve//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie//stash"),
 					// Stash 1: 5Gmdzhhd6KavPysdrnMbywimYcUKtRLdEDQtbmJbdi7ZC5sU
 					hex!["d028ff189adb5d633dc67f6d741acb8cbd42001dec5fc307c485585c22aefa2a"].into(),
 					// Controller 1: 5HpnvpCwwbf3tYhM34cALYp2UnDZcvGvWSxpgq8v5zDHDQcB
@@ -87,10 +81,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				vec![
 					get_account_id_from_seed::<sr25519::Public>("Alice"),
 					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 					// Controller 1: 5HpnvpCwwbf3tYhM34cALYp2UnDZcvGvWSxpgq8v5zDHDQcB
 					hex!["fecd09851c570b330866244c5f4af5f46d2ca1b2e91e464145ebc31aed069d61"].into(),
 					// Controller 2: 5GRSjNELxVXy6uo7paVrLwjEK2NwEDzT5tky4tgVGKCdqLQQ
@@ -100,12 +90,6 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				],
 				// VA Board Accounts
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
-					get_account_id_from_seed::<sr25519::Public>("Dave"),
-					get_account_id_from_seed::<sr25519::Public>("Eve"),
-					get_account_id_from_seed::<sr25519::Public>("Ferdie"),
 					// Controller 1: 5HpnvpCwwbf3tYhM34cALYp2UnDZcvGvWSxpgq8v5zDHDQcB
 					hex!["fecd09851c570b330866244c5f4af5f46d2ca1b2e91e464145ebc31aed069d61"].into(),
 					// Controller 2: 5GRSjNELxVXy6uo7paVrLwjEK2NwEDzT5tky4tgVGKCdqLQQ
@@ -312,10 +296,12 @@ fn staging_genesis(
 			phantom: Default::default(),
 			members: council_accounts.iter().cloned().collect(),
 		},
+		council_members: Default::default(),
 		board_virginia: BoardVirginiaConfig {
 			phantom: Default::default(),
 			members: board_va_accounts.iter().cloned().collect(),
 		},
+		board_virginia_members: Default::default(),
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
@@ -353,10 +339,12 @@ fn dev_genesis(
 			phantom: Default::default(),
 			members: council_accounts.iter().cloned().collect(),
 		},
+		council_members: Default::default(),
 		board_virginia: BoardVirginiaConfig {
 			phantom: Default::default(),
 			members: board_va_accounts.iter().cloned().collect(),
 		},
+		board_virginia_members: Default::default(),
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
