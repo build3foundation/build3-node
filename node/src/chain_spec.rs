@@ -312,10 +312,12 @@ fn staging_genesis(
 			phantom: Default::default(),
 			members: council_accounts.iter().cloned().collect(),
 		},
+		council_members: Default::default(),
 		board_virginia: BoardVirginiaConfig {
 			phantom: Default::default(),
 			members: board_va_accounts.iter().cloned().collect(),
 		},
+		board_virginia_members: Default::default(),
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),
@@ -353,10 +355,12 @@ fn dev_genesis(
 			phantom: Default::default(),
 			members: council_accounts.iter().cloned().collect(),
 		},
+		council_members: Default::default(),
 		board_virginia: BoardVirginiaConfig {
 			phantom: Default::default(),
 			members: board_va_accounts.iter().cloned().collect(),
 		},
+		board_virginia_members: Default::default(),
 		sudo: SudoConfig {
 			// Assign network admin rights.
 			key: Some(root_key),

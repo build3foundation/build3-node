@@ -240,13 +240,6 @@ impl pallet_aura::Config for Runtime {
 	type MaxAuthorities = MaxAuthorities;
 }
 
-/// Configure an Origin requirement which must be eitehr half council vote or a
-/// sudo key
-type EnsureRootOrHalfCouncil = EnsureOneOf<
-	EnsureRoot<AccountId>,
-	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
->;
-
 // Identity pallet storage
 parameter_types! {
 	pub const BasicDeposit: Balance = 10 * DOLLARS;       // 258 bytes on-chain
@@ -346,32 +339,14 @@ parameter_types! {
 
 /// Balances configuration
 impl pallet_balances::Config for Runtime {
-	/// The maximum number of locks that should exist on an account.
-	/// Not strictly enforced, but used for weight estimation.
 	type MaxLocks = MaxLocks;
-
-	/// The maximum number of named reserves that can exist on an account.
 	type MaxReserves = ();
-
-	/// The id type for named reserves.
 	type ReserveIdentifier = [u8; 8];
-
-	/// The type for recording an account's balance.
 	type Balance = Balance;
-
-	/// The ubiquitous event type.
 	type Event = Event;
-
-	/// Handler for the unbalanced reduction when removing a dust account.
 	type DustRemoval = ();
-
-	/// The minimum amount required to keep an account open.
 	type ExistentialDeposit = ExistentialDeposit;
-
-	/// The means of storing the balances of an account.
 	type AccountStore = System;
-
-	/// Weight information for extrinsics in this pallet.
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 }
 
@@ -382,7 +357,7 @@ parameter_types! {
 	pub const CouncilMaxMembers: u32 = 100;
 }
 
-// Council configuration
+/// Council configuration
 type CouncilCollective = pallet_collective::Instance1;
 impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type Origin = Origin;
@@ -395,6 +370,28 @@ impl pallet_collective::Config<CouncilCollective> for Runtime {
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
 }
 
+/// Configure an Origin requirement which must be either half Build3 council vote or a
+/// sudo key
+type EnsureRootOrHalfCouncil = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<AccountId, CouncilCollective, 1, 2>,
+>;
+/// Define the name for the membership instance of the Build3 Council
+type CouncilMembership = pallet_collective::Instance1;
+/// Build3 Council membership configuration
+impl pallet_membership::Config<CouncilMembership> for Runtime {
+	type Event = Event;
+	type AddOrigin = EnsureRootOrHalfCouncil;
+	type RemoveOrigin = EnsureRootOrHalfCouncil;
+	type SwapOrigin = EnsureRootOrHalfCouncil;
+	type ResetOrigin = EnsureRootOrHalfCouncil;
+	type PrimeOrigin = EnsureRootOrHalfCouncil;
+	type MembershipInitialized = Council;
+	type MembershipChanged = Council;
+	type MaxMembers = CouncilMaxMembers;
+	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
+}
+
 // Board of VA constant configurations
 parameter_types! {
 	pub const BoardVirginiaMotionDuration: BlockNumber = 5 * DAYS;
@@ -402,7 +399,7 @@ parameter_types! {
 	pub const BoardVirginiaMaxMembers: u32 = 100;
 }
 
-// Board of VA configuration
+/// Board of VA configuration
 type BoardVirginiaCollective = pallet_collective::Instance2;
 impl pallet_collective::Config<BoardVirginiaCollective> for Runtime {
 	type Origin = Origin;
@@ -413,6 +410,29 @@ impl pallet_collective::Config<BoardVirginiaCollective> for Runtime {
 	type MaxMembers = BoardVirginiaMaxMembers;
 	type DefaultVote = pallet_collective::PrimeDefaultVote;
 	type WeightInfo = pallet_collective::weights::SubstrateWeight<Runtime>;
+}
+
+/// Configure an Origin requirement which must be either half VA Board vote or a
+/// sudo key
+type EnsureRootOrHalfBoardVirginia = EnsureOneOf<
+	EnsureRoot<AccountId>,
+	pallet_collective::EnsureProportionMoreThan<AccountId, BoardVirginiaCollective, 1, 2>,
+>;
+
+/// Define the name for the membership instance of the VA Board
+type BoardVirginiaMembership = pallet_collective::Instance2;
+/// Virginia Board membership configuration
+impl pallet_membership::Config<BoardVirginiaMembership> for Runtime {
+	type Event = Event;
+	type AddOrigin = EnsureRootOrHalfBoardVirginia;
+	type RemoveOrigin = EnsureRootOrHalfBoardVirginia;
+	type SwapOrigin = EnsureRootOrHalfBoardVirginia;
+	type ResetOrigin = EnsureRootOrHalfBoardVirginia;
+	type PrimeOrigin = EnsureRootOrHalfBoardVirginia;
+	type MembershipInitialized = BoardVirginia;
+	type MembershipChanged = BoardVirginia;
+	type MaxMembers = BoardVirginiaMaxMembers;
+	type WeightInfo = pallet_membership::weights::SubstrateWeight<Runtime>;
 }
 
 // Transaction storage
@@ -542,7 +562,10 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		Identity: pallet_identity,
 		Council: pallet_collective::<Instance1>,
+		CouncilMembers: pallet_membership::<Instance1>,
 		BoardVirginia: pallet_collective::<Instance2>,
+		BoardVirginiaMembers: pallet_membership::<Instance2>,
+
 	}
 );
 
@@ -738,6 +761,8 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_identity,  Identity);
 			list_benchmark!(list, extra, pallet_collective,  Council);
 			list_benchmark!(list, extra, pallet_collective,  BoardVirginia);
+			list_benchmark!(list, extra, pallet_membership, BoardVirginiaMembers);
+			list_benchmark!(list, extra, pallet_membership, CouncilMembers);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -778,6 +803,8 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_identity, Identity);
 			add_benchmark!(params, batches, pallet_collective, Council);
 			add_benchmark!(params, bathces, pallet_collective, BoardVirginia);
+			add_benchmark!(params, batches, pallet_membership, BoardVirginiaMembers);
+			add_benchmark!(params, batches, pallet_membership, CouncilMembers);
 
 			Ok(batches)
 		}
