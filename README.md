@@ -65,8 +65,8 @@ setup with custom keys.
 
 ## Windows Users
 
-- [Install SKD for Windows](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
-- [Install RustupInit.exe](https://www.rust-lang.org/tools/install)
+- [Install SKD for Windows](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/) and restart
+- [Install RustupInit.exe](https://www.rust-lang.org/tools/install) and restart
 - Clone this repository
 - In PS, navigate to the repository.
 - Run `cargo install build3-node --path ./node` 
