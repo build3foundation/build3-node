@@ -25,6 +25,7 @@ This installation assumes you have `Rust` is installed on your local environment
 Mac:
 
 ```bash
+cargo build --release
 cargo install build3-node --path ./node
 ```
 
