@@ -67,6 +67,12 @@ setup with custom keys.
 
 - [Install SKD for Windows](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/) and restart
 - [Install RustupInit.exe](https://www.rust-lang.org/tools/install) and restart
+- run
+```shell
+rustup update
+rustup update nightly
+rustup target add wasm32-unknown-unknown --toolchain nightly
+```
 - Clone this repository
 - In PS, navigate to the repository.
 - Run `cargo install build3-node --path ./node` 
