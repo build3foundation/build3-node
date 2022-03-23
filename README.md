@@ -21,7 +21,7 @@ rustup target add wasm32-unknown-unknown --toolchain nightly
 
 ## Installation
 
-This installation assumes you have `Rust` and `Cargo` installed on your local environment.
+This installation assumes you have `Rust` is installed on your local environment. For windows usersnot using wsl, see section below . 
 Mac:
 
 ```bash
