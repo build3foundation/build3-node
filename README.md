@@ -62,3 +62,11 @@ to connect the frontend to your local node.
 
 [This](https://medium.com/oak-blockchain/tutorial-deploy-a-substrate-npos-network-in-3-minutes-fab9de5c4c2b) was a useful website to understand how to get the NPOS staging network
 setup with custom keys.
+
+## Windows Users
+
+- [Install SKD for Windows](https://developer.microsoft.com/en-us/windows/downloads/windows-sdk/)
+- [Install RustupInit.exe](https://www.rust-lang.org/tools/install)
+- Clone this repository
+- In PS, navigate to the repository.
+- Run `cargo install build3-node --path ./node` 
